@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Every registered person in AI Assist has exactly one role.
 /// The role determines which mode(s) they see after logging in —
 /// this is the core of the role-based access control (RBAC) for the app.
@@ -51,13 +53,13 @@ enum UserRole {
   Color get color {
     switch (this) {
       case UserRole.blind:
-        return Colors.indigo;
+        return AppColors.roleBlind;
       case UserRole.nonSpeaking:
-        return Colors.teal;
+        return AppColors.roleNonSpeaking;
       case UserRole.motor:
-        return Colors.deepOrange;
+        return AppColors.roleMotor;
       case UserRole.admin:
-        return Colors.purple;
+        return AppColors.roleAdmin;
     }
   }
 

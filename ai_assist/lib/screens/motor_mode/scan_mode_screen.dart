@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/user_profile.dart';
-import '../../services/auth_service.dart';
 import '../../services/emergency_service.dart';
+import '../../services/session_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/tts_service.dart';
-import '../auth/profile_select_screen.dart';
+import '../auth/welcome_screen.dart';
 
 /// MOTOR MODE — implementation note:
 ///
@@ -30,7 +30,10 @@ import '../auth/profile_select_screen.dart';
 /// gaze-based "dwell" signal once real eye tracking is added, and the rest
 /// of the UI needs no change.
 class ScanModeScreen extends StatefulWidget {
-  const ScanModeScreen({super.key});
+  final String familyUid;
+  final UserProfile profile;
+
+  const ScanModeScreen({super.key, required this.familyUid, required this.profile});
 
   @override
   State<ScanModeScreen> createState() => _ScanModeScreenState();
@@ -48,7 +51,6 @@ class _ScanModeScreenState extends State<ScanModeScreen> {
   int _index = 0;
   int _scanSpeedMs = 1500;
   bool _paused = false;
-  UserProfile? _profile;
 
   late final List<_ScanTile> _tiles;
   final FocusNode _focusNode = FocusNode();
@@ -67,19 +69,13 @@ class _ScanModeScreenState extends State<ScanModeScreen> {
       _ScanTile('Faster', Icons.fast_forward, _increaseSpeed),
     ];
     _loadSpeed();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final profile = await AuthService.instance.getCurrentProfile();
-    setState(() => _profile = profile);
   }
 
   Future<void> _logout() async {
-    await AuthService.instance.logout();
+    await SessionService.instance.clear();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const ProfileSelectScreen()),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }
@@ -90,8 +86,10 @@ class _ScanModeScreenState extends State<ScanModeScreen> {
   /// emergency action must work through the identical mechanism rather
   /// than requiring a separate precise tap elsewhere on screen.
   Future<void> _triggerEmergency() async {
-    if (_profile == null) return;
-    await EmergencyService.instance.triggerAlert(_profile!);
+    await EmergencyService.instance.triggerAlert(
+      familyUid: widget.familyUid,
+      profile: widget.profile,
+    );
   }
 
   Future<void> _loadSpeed() async {

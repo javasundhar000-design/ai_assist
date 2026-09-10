@@ -1,8 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'screens/auth/profile_select_screen.dart';
+import 'firebase_options.dart';
+import 'screens/auth/auth_gate.dart';
+import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const AIAssistApp());
 }
 
@@ -14,29 +19,11 @@ class AIAssistApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AI Assist',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(fontSize: 18),
-          bodyMedium: TextStyle(fontSize: 16),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(56),
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-      // Every session starts at profile selection ("who is using this
-      // app?"), which enforces role-based access from the very first
-      // screen — a Blind-role member is routed straight into Blind Mode
-      // only, never shown the other modes.
-      home: const ProfileSelectScreen(),
+      theme: AppTheme.light(),
+      // AuthGate figures out, on cold launch, whether this device already
+      // belongs to a member or a signed-in caregiver, and routes straight
+      // there — see auth_gate.dart for the priority order.
+      home: const AuthGate(),
     );
   }
 }

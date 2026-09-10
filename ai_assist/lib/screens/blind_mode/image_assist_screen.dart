@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/user_profile.dart';
-import '../../services/auth_service.dart';
 import '../../services/openrouter_service.dart';
+import '../../services/session_service.dart';
 import '../../services/tts_service.dart';
 import '../../widgets/emergency_button.dart';
 import '../../widgets/feature_button.dart';
-import '../auth/profile_select_screen.dart';
+import '../auth/welcome_screen.dart';
 
 enum AssistFeature {
   full('Full Analysis', Icons.auto_awesome, AssistPrompts.fullAnalysis),
@@ -26,7 +26,10 @@ enum AssistFeature {
 }
 
 class ImageAssistScreen extends StatefulWidget {
-  const ImageAssistScreen({super.key});
+  final String familyUid;
+  final UserProfile profile;
+
+  const ImageAssistScreen({super.key, required this.familyUid, required this.profile});
 
   @override
   State<ImageAssistScreen> createState() => _ImageAssistScreenState();
@@ -40,24 +43,12 @@ class _ImageAssistScreenState extends State<ImageAssistScreen> {
   String _result = '';
   bool _loading = false;
   AssistFeature _feature = AssistFeature.full;
-  UserProfile? _profile;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final profile = await AuthService.instance.getCurrentProfile();
-    setState(() => _profile = profile);
-  }
 
   Future<void> _logout() async {
-    await AuthService.instance.logout();
+    await SessionService.instance.clear();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const ProfileSelectScreen()),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }
@@ -129,12 +120,12 @@ class _ImageAssistScreenState extends State<ImageAssistScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_profile == null ? 'Blind Mode' : 'Blind Mode — ${_profile!.name}'),
+        title: Text('Blind Mode — ${widget.profile.name}'),
         actions: [
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout, tooltip: 'Log out'),
         ],
       ),
-      floatingActionButton: _profile == null ? null : EmergencyButton(profile: _profile!),
+      floatingActionButton: EmergencyButton(familyUid: widget.familyUid, profile: widget.profile),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

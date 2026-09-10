@@ -10,7 +10,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Networking
+  # Firebase — realtime, multi-device backend
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.3.3      # caregiver accounts (email + password)
+  firebase_database: ^11.1.6 # Realtime Database: members, alerts, live sync
+
+  # Networking (OpenRouter)
   http: ^1.6.0
 
   # Camera / images
@@ -19,24 +24,20 @@ dependencies:
   # Voice output (Blind Mode + Non-Speaking Mode)
   flutter_tts: ^4.2.0
 
-  # Voice input (Non-Speaking Mode: speak-to-type, Blind Mode: voice commands)
+  # Voice input (Non-Speaking Mode: speak-to-type)
   speech_to_text: ^7.0.0
 
-  # Local persistence (notes, quick phrases, settings) — no cloud account needed
+  # Local, per-device session cache (which family this device joined, notes)
   shared_preferences: ^2.3.3
 
   # SOS emergency alerts: launches the phone's SMS/dialer app
   url_launcher: ^6.3.1
 
+  # Typography
+  google_fonts: ^6.2.1
+
   # Icons
   cupertino_icons: ^1.0.8
-
-  # Firebase
-  firebase_core: ^4.14.0
-  firebase_auth: ^6.2.0
-  cloud_firestore: ^6.2.0
-  firebase_database: ^12.1.0
-  firebase_storage: ^13.1.0
 
 dev_dependencies:
   flutter_test:

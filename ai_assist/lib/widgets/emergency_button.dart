@@ -11,9 +11,10 @@ import '../services/tts_service.dart';
 /// single accidental tap (especially relevant for Motor Mode users) from
 /// triggering a false alarm, while still being fast for a real emergency.
 class EmergencyButton extends StatelessWidget {
+  final String familyUid;
   final UserProfile profile;
 
-  const EmergencyButton({super.key, required this.profile});
+  const EmergencyButton({super.key, required this.familyUid, required this.profile});
 
   Future<void> _startConfirmFlow(BuildContext context) async {
     await TtsService.instance.speak('Emergency. Confirm within 3 seconds to send an alert.');
@@ -72,7 +73,7 @@ class EmergencyButton extends StatelessWidget {
       return;
     }
 
-    await EmergencyService.instance.triggerAlert(profile);
+    await EmergencyService.instance.triggerAlert(familyUid: familyUid, profile: profile);
   }
 
   @override

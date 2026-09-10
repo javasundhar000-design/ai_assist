@@ -1,79 +1,41 @@
-import 'dart:convert';
-import 'dart:math';
-
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/emergency_alert.dart';
 import '../models/user_profile.dart';
+import 'family_service.dart';
 import 'tts_service.dart';
 
 /// Handles the emergency / SOS flow available from Blind, Non-Speaking,
 /// and Motor mode screens.
 ///
-/// What this actually does on a real device:
-///  1. Writes an EmergencyAlert record to local storage, so the Admin
-///     dashboard (on THIS device) can see it in the alert log.
+/// What this does on a real device:
+///  1. Writes an alert to Firebase Realtime Database under the member's
+///     family — because this is now backed by Firebase (not local
+///     storage), the caregiver's Admin Dashboard sees it appear LIVE on
+///     their own device, even if they're nowhere near the member's phone.
+///     This was the main limitation of the local-only prototype; it's
+///     gone now.
 ///  2. Speaks a confirmation aloud via TTS.
 ///  3. Opens the phone's own SMS app, pre-addressed to the member's first
-///     saved emergency contact with a pre-filled message — the member (or
-///     whoever's nearby) still has to tap "send" in that app. This is a
-///     deliberate limitation: sending SMS silently/automatically requires
-///     the SEND_SMS permission and a plugin like flutter_sms /
-///     telephony, which Google Play treats as a sensitive permission
-///     requiring special review — appropriate for a hardened production
-///     build, not this prototype.
+///     saved emergency contact with a pre-filled message. The member (or
+///     whoever's nearby) still has to tap "send" in that app — see the
+///     note below on why this isn't silent.
 ///
-/// For real deployment where alerts must reach a caregiver's phone even
-/// when they're not looking at this device (true push notification),
-/// you need a backend: this device posts the alert to a server (e.g.
-/// Firebase Firestore), and the admin's device gets a push notification
-/// (e.g. Firebase Cloud Messaging) — see README for the swap-in points.
+/// Why SMS isn't sent silently: doing that needs the SEND_SMS permission
+/// and a plugin like flutter_sms/telephony, which Google Play treats as a
+/// sensitive permission requiring additional review and justification.
+/// That's a deliberate decision to make explicitly for your deployment,
+/// not a default to ship quietly — see README's security notes.
 class EmergencyService {
   EmergencyService._internal();
   static final EmergencyService instance = EmergencyService._internal();
 
-  static const _kAlertsKey = 'emergency_alerts';
-  final _rand = Random();
-
-  Future<List<EmergencyAlert>> loadAlerts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_kAlertsKey);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => EmergencyAlert.fromJson(e as Map<String, dynamic>))
-        .toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-  }
-
-  Future<void> _saveAlerts(List<EmergencyAlert> alerts) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = jsonEncode(alerts.map((a) => a.toJson()).toList());
-    await prefs.setString(_kAlertsKey, raw);
-  }
-
-  Future<void> resolveAlert(String id) async {
-    final alerts = await loadAlerts();
-    final alert = alerts.firstWhere((a) => a.id == id);
-    alert.resolved = true;
-    await _saveAlerts(alerts);
-  }
-
-  /// Triggers a full emergency alert for [profile]. Returns the created
-  /// alert so the calling screen can show confirmation UI if it wants to.
-  Future<EmergencyAlert> triggerAlert(UserProfile profile) async {
-    final alert = EmergencyAlert(
-      id: '${DateTime.now().millisecondsSinceEpoch}_${_rand.nextInt(99999)}',
-      profileId: profile.id,
-      profileName: profile.name,
-      roleLabel: profile.role.label,
-      timestamp: DateTime.now(),
-    );
-
-    final alerts = await loadAlerts();
-    alerts.insert(0, alert);
-    await _saveAlerts(alerts);
+  /// Triggers a full emergency alert for [profile], who belongs to the
+  /// family identified by [familyUid].
+  Future<void> triggerAlert({
+    required String familyUid,
+    required UserProfile profile,
+  }) async {
+    await FamilyService.instance.pushAlert(familyUid: familyUid, profile: profile);
 
     await TtsService.instance.speak(
       'Emergency alert sent for ${profile.name}. Opening a message to '
@@ -82,6 +44,7 @@ class EmergencyService {
 
     if (profile.emergencyContacts.isNotEmpty) {
       final contact = profile.emergencyContacts.first;
+      final now = DateTime.now();
       final smsUri = Uri(
         scheme: 'sms',
         path: contact.phone,
@@ -89,23 +52,20 @@ class EmergencyService {
           'body':
               'EMERGENCY ALERT: ${profile.name} (${profile.role.label}, '
               'AI Assist app) needs help right now. Sent at '
-              '${alert.timestamp.hour.toString().padLeft(2, '0')}:'
-              '${alert.timestamp.minute.toString().padLeft(2, '0')}.',
+              '${now.hour.toString().padLeft(2, '0')}:'
+              '${now.minute.toString().padLeft(2, '0')}.',
         },
       );
       try {
         await launchUrl(smsUri);
       } catch (_) {
-        // If no SMS app / launch fails, the alert is still logged locally
-        // and spoken aloud — this is a soft failure, not a thrown error.
+        // Soft failure — the alert is still logged in Firebase and spoken
+        // aloud even if no SMS app is available to open.
       }
     }
-
-    return alert;
   }
 
-  /// Directly dials the member's first emergency contact (separate from
-  /// triggerAlert, for a "Call Now" button instead of / in addition to SMS).
+  /// Directly dials the member's first emergency contact.
   Future<void> callFirstContact(UserProfile profile) async {
     if (profile.emergencyContacts.isEmpty) return;
     final phone = profile.emergencyContacts.first.phone;

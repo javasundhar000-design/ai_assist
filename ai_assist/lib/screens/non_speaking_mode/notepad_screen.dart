@@ -3,15 +3,18 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../models/quick_phrase.dart';
 import '../../models/user_profile.dart';
-import '../../services/auth_service.dart';
 import '../../services/openrouter_service.dart';
+import '../../services/session_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/tts_service.dart';
 import '../../widgets/emergency_button.dart';
-import '../auth/profile_select_screen.dart';
+import '../auth/welcome_screen.dart';
 
 class NotepadScreen extends StatefulWidget {
-  const NotepadScreen({super.key});
+  final String familyUid;
+  final UserProfile profile;
+
+  const NotepadScreen({super.key, required this.familyUid, required this.profile});
 
   @override
   State<NotepadScreen> createState() => _NotepadScreenState();
@@ -26,25 +29,18 @@ class _NotepadScreenState extends State<NotepadScreen> {
   bool _listening = false;
   bool _suggesting = false;
   String _suggestion = '';
-  UserProfile? _profile;
 
   @override
   void initState() {
     super.initState();
     _loadState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final profile = await AuthService.instance.getCurrentProfile();
-    setState(() => _profile = profile);
   }
 
   Future<void> _logout() async {
-    await AuthService.instance.logout();
+    await SessionService.instance.clear();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const ProfileSelectScreen()),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }
@@ -188,12 +184,12 @@ class _NotepadScreenState extends State<NotepadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_profile == null ? 'Non-Speaking Mode' : 'Non-Speaking — ${_profile!.name}'),
+        title: Text('Non-Speaking — ${widget.profile.name}'),
         actions: [
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout, tooltip: 'Log out'),
         ],
       ),
-      floatingActionButton: _profile == null ? null : EmergencyButton(profile: _profile!),
+      floatingActionButton: EmergencyButton(familyUid: widget.familyUid, profile: widget.profile),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
