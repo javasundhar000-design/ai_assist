@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/user_profile.dart';
 import '../../models/user_role.dart';
 import '../../services/auth_service.dart';
+import '../../services/session_service.dart';
 import '../../services/tts_service.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../blind_mode/image_assist_screen.dart';
@@ -45,7 +46,15 @@ class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
     }
     await AuthService.instance.login(profile.id);
     if (!mounted) return;
-    _navigateToRoleHome(profile);
+    final familyUid = await SessionService.instance.loadFamilyUidOnly();
+    if (!mounted) return;
+    if (familyUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This device is not connected to a family yet.')),
+      );
+      return;
+    }
+    _navigateToRoleHome(familyUid, profile);
   }
 
   Future<bool> _promptAdminPin(UserProfile profile) async {
@@ -84,17 +93,17 @@ class _ProfileSelectScreenState extends State<ProfileSelectScreen> {
     return result ?? false;
   }
 
-  void _navigateToRoleHome(UserProfile profile) {
+  void _navigateToRoleHome(String familyUid, UserProfile profile) {
     Widget destination;
     switch (profile.role) {
       case UserRole.blind:
-        destination = const ImageAssistScreen();
+        destination = ImageAssistScreen(familyUid: familyUid, profile: profile);
         break;
       case UserRole.nonSpeaking:
-        destination = const NotepadScreen();
+        destination = NotepadScreen(familyUid: familyUid, profile: profile);
         break;
       case UserRole.motor:
-        destination = const ScanModeScreen();
+        destination = ScanModeScreen(familyUid: familyUid, profile: profile);
         break;
       case UserRole.admin:
         destination = const AdminDashboardScreen();

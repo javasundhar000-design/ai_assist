@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/user_profile.dart';
 import '../services/tts_service.dart';
 import '../widgets/mode_card.dart';
 import 'blind_mode/image_assist_screen.dart';
@@ -7,7 +8,10 @@ import 'motor_mode/scan_mode_screen.dart';
 import 'non_speaking_mode/notepad_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String familyUid;
+  final UserProfile profile;
+
+  const HomeScreen({super.key, required this.familyUid, required this.profile});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -57,7 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.indigo,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const ImageAssistScreen(),
+                    builder: (_) => ImageAssistScreen(
+                      familyUid: widget.familyUid,
+                      profile: widget.profile,
+                    ),
                   ),
                 ),
               ),
@@ -71,7 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.teal,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const NotepadScreen(),
+                    builder: (_) => NotepadScreen(
+                      familyUid: widget.familyUid,
+                      profile: widget.profile,
+                    ),
                   ),
                 ),
               ),
@@ -85,7 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.deepOrange,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const ScanModeScreen(),
+                    builder: (_) => ScanModeScreen(
+                      familyUid: widget.familyUid,
+                      profile: widget.profile,
+                    ),
                   ),
                 ),
               ),

@@ -61,7 +61,6 @@ class AuthService {
       name: name.trim(),
       role: role,
       emergencyContacts: emergencyContacts.cast(),
-      adminPin: adminPin,
     );
     profiles.add(profile);
     await _saveProfiles(profiles);
@@ -106,7 +105,6 @@ class AuthService {
   }
 
   bool verifyAdminPin(UserProfile profile, String enteredPin) {
-    if (profile.role != UserRole.admin) return false;
-    return profile.adminPin != null && profile.adminPin == enteredPin;
+    return false;
   }
 }
