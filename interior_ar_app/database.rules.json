@@ -1,0 +1,60 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "projects": {
+      ".indexOn": ["userId"],
+      "$projectId": {
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid) && (newData.child('userId').val() === auth.uid)"
+      }
+    },
+
+    "rooms": {
+      ".indexOn": ["projectId"],
+      "$roomId": {
+        ".read": "auth != null && root.child('projects').child(data.child('projectId').val()).child('userId').val() === auth.uid",
+        ".write": "auth != null && root.child('projects').child(newData.child('projectId').val()).child('userId').val() === auth.uid"
+      }
+    },
+
+    "roomImages": {
+      "$roomId": {
+        ".read": "auth != null && root.child('projects').child(root.child('rooms').child($roomId).child('projectId').val()).child('userId').val() === auth.uid",
+        ".write": "auth != null && root.child('projects').child(root.child('rooms').child($roomId).child('projectId').val()).child('userId').val() === auth.uid"
+      }
+    },
+
+    "detectedObjects": {
+      "$roomId": {
+        ".read": "auth != null && root.child('projects').child(root.child('rooms').child($roomId).child('projectId').val()).child('userId').val() === auth.uid",
+        ".write": "auth != null && root.child('projects').child(root.child('rooms').child($roomId).child('projectId').val()).child('userId').val() === auth.uid"
+      }
+    },
+
+    "furniture": {
+      ".read": "auth != null",
+      ".write": false
+    },
+
+    "designs": {
+      ".indexOn": ["userId", "projectId"],
+      "$designId": {
+        ".read": "auth != null && data.child('userId').val() === auth.uid",
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid) && (newData.child('userId').val() === auth.uid)"
+      }
+    },
+
+    "designFurniture": {
+      "$designId": {
+        ".read": "auth != null && root.child('designs').child($designId).child('userId').val() === auth.uid",
+        ".write": "auth != null && root.child('designs').child($designId).child('userId').val() === auth.uid"
+      }
+    }
+  }
+}

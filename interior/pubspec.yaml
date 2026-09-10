@@ -1,0 +1,129 @@
+name: interior_ar_app
+description: >
+  Advanced Interior Design Platform - Computer Vision room analysis +
+  AR spatial visualization. Flutter + Dart + Firebase Realtime Database.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  # Matched to Flutter 3.16.7 / Dart 3.2.4. If you later run
+  # `flutter upgrade`, you can raise this back toward '>=3.3.0' or
+  # higher — nothing in the Dart *language* used here needs anything
+  # past 3.0 (records, sealed classes, super-parameters, pattern-matching
+  # switch expressions are all Dart 3.0+), this constraint just tracks
+  # your currently installed SDK.
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.4.9
+
+  # Firebase (Auth + Realtime Database + Storage ONLY — no Firestore)
+  # NOTE: Firebase plugin releases bump their minimum Dart SDK
+  # aggressively and often. These versions are my best estimate of what
+  # was current around when Flutter 3.16 shipped (~Nov 2023-Jan 2024) —
+  # verify against pub.dev after `flutter pub get`; if a newer patch
+  # within the same major refuses to resolve, try one minor version
+  # down within the same major line first before changing majors.
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  firebase_database: ^10.4.0
+  firebase_storage: ^11.6.0
+
+  # Routing
+  go_router: ^12.1.3
+
+  # Camera / images (Phase 7 - room scanner)
+  camera: ^0.10.5+9
+  image_picker: ^1.0.7
+  image: ^4.1.7
+  cached_network_image: ^3.3.1
+  # permission_handler pinned to the 10.x line specifically: ar_flutter_plugin
+  # ^0.7.3 depends on permission_handler ^10.1.0, and pub's resolver
+  # rejects anything outside that range as long as ar_flutter_plugin is
+  # a dependency. Confirmed by an actual `flutter pub get` resolver
+  # error — do not bump this back to 11.x while ar_flutter_plugin stays
+  # pinned at 0.7.3, or the same conflict returns.
+  permission_handler: ^10.4.5
+
+  # On-device Computer Vision (Phase 8 - room analysis).
+  # NOTE: pin exact patch versions after `flutter pub get` in your own
+  # environment — this sandbox has no pub.dev access to verify the very
+  # latest compatible releases, so treat these as a known-good starting
+  # point rather than a guaranteed-latest pin.
+  # google_mlkit_object_detection and google_mlkit_image_labeling both
+  # depend on google_mlkit_commons internally, and their versions must
+  # agree on a compatible commons range or pub's resolver rejects the
+  # combination outright (confirmed by an actual resolver error).
+  # image_labeling bumped to ^0.12.0 per pub's own suggested fix, rather
+  # than pushing object_detection down further.
+  google_mlkit_object_detection: ^0.13.0
+  google_mlkit_image_labeling: ^0.12.0
+  path_provider: ^2.1.1
+
+  # 3D furniture preview (Phase 11). Wraps the <model-viewer> web
+  # component via WebView — the standard Flutter approach for GLB/glTF,
+  # since there's no mature pure-Dart glTF renderer.
+  model_viewer_plus: ^1.5.0
+
+  # AR Visualization (Phase 12). Cross-platform (ARCore + ARKit) plugin —
+  # this package hasn't had frequent releases, so ^0.7.3 is likely still
+  # correct here, but verify against pub.dev; this sandbox has no
+  # pub.dev access and AR plugins in the Flutter ecosystem change API
+  # shape between versions more than most. See
+  # lib/features/ar_visualization/services/ar_session_service.dart for
+  # the one file to patch if method names differ.
+  ar_flutter_plugin: ^0.7.3
+  vector_math: ^2.1.4
+
+  # Local lightweight caching (temporary state, settings) — NOT a database replacement
+  shared_preferences: ^2.2.2
+  hive_flutter: ^1.1.0
+
+  # UI
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+
+  # Utilities
+  uuid: ^4.3.3
+  equatable: ^2.0.5
+  intl: ^0.18.1
+  connectivity_plus: ^5.0.2
+  logger: ^2.0.2+1
+
+  cupertino_icons: ^1.0.6
+
+
+dependency_overrides:
+  ar_flutter_plugin:
+    path: vendor/ar_flutter_plugin
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.7
+  hive_generator: ^2.0.1
+  # Used only by bin/seed_furniture.dart (a dev-time admin script, not
+  # part of the running app) — see README "Seeding the furniture catalog".
+  http: ^1.1.2
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/models/
+    - assets/sample_furniture.json
+
+
+
+# NOTE (later phases add):
+#   google_mlkit_object_detection (Phase 10 - computer vision)
+#   ar_flutter_plugin / arkit_plugin + arcore_flutter_plugin (Phase 12 - AR)
+#   model_viewer_plus or flutter_cube (Phase 11 - GLB/glTF preview)
+# These are deliberately deferred until their phase so the project keeps
+# compiling cleanly at every step, per the incremental build rule.

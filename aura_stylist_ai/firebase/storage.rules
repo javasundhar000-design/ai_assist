@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Module 12: Storage rules companion to database.rules.json.
+//
+// Only `profileImages/{uid}.jpg` exists as a Storage path in this build —
+// `ProfileStorageDataSource` (Module 3) is the only place anything is
+// uploaded. Wardrobe outfits (Module 10) don't touch Storage at all:
+// they're stored as catalog item-id references in Realtime Database
+// (see `WardrobeRealtimeDataSource`), not images, since there are no
+// real garment photo assets in this build to upload in the first place
+// (see `ClothingItem`'s doc comment on `color` standing in for artwork).
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Wildcards must occupy an entire path segment — `{fileName}.jpg`
+    // (mixing a wildcard with a literal suffix in one segment) isn't
+    // valid Security Rules syntax. So the whole filename is captured as
+    // one variable, and the "does this file belong to this uid" check
+    // happens inside the `allow` condition via string concatenation
+    // instead of in the path pattern itself.
+    match /profileImages/{fileName} {
+      // Anyone signed in (including anonymous/guest sessions, matching
+      // database.rules.json) can read any profile photo — avatars are
+      // shown to other users in this app's model, not private.
+      allow read: if request.auth != null;
+
+      // Only the owning account can write its own photo (enforced by
+      // requiring the filename to be exactly "<their uid>.jpg", matching
+      // ProfileStorageDataSource's upload path), and only if it's
+      // actually an image under 5MB — matches the resize/quality
+      // constraints `ProfilePage._pickAndUploadPhoto` already applies
+      // client-side (this is the server-side backstop, not the only
+      // check).
+      allow write: if request.auth != null
+                   && fileName == request.auth.uid + '.jpg'
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Everything else is closed by default — no catch-all read/write.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

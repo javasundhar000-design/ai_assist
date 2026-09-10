@@ -1,0 +1,62 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        // A signed-in user (including anonymous/guest sessions) can only
+        // read and write their own node — never another user's.
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+
+        "profile": {
+          ".validate": "newData.hasChildren(['name', 'preferredLanguage', 'createdAt'])",
+          "name": { ".validate": "newData.isString() && newData.val().length > 0" },
+          "email": { ".validate": "newData.isString() || newData.val() == null" },
+          "gender": { ".validate": "newData.isString() || newData.val() == null" },
+          "age": { ".validate": "newData.isNumber() || newData.val() == null" },
+          "preferredLanguage": { ".validate": "newData.isString()" },
+          "skinTone": { ".validate": "newData.isString() || newData.val() == null" },
+          "bodyType": { ".validate": "newData.isString() || newData.val() == null" },
+          "faceShape": { ".validate": "newData.isString() || newData.val() == null" },
+          "photoUrl": { ".validate": "newData.isString() || newData.val() == null" },
+          "createdAt": { ".validate": "newData.isNumber()" }
+        },
+
+        // Module 10 (Wardrobe/Favorites/History): one saved outfit per
+        // child key, matching WardrobeRealtimeDataSource's
+        // `users/{uid}/wardrobe/{outfitId}` writes. `itemIdsByLayer` is
+        // intentionally unvalidated beyond "is a map of strings" — it
+        // references catalog item ids, and the catalog itself may grow
+        // independently of these rules, so pinning it to a fixed set of
+        // layer/id values here would just mean updating this file every
+        // time the demo catalog does.
+        "wardrobe": {
+          "$outfitId": {
+            ".validate": "newData.hasChildren(['name', 'itemIdsByLayer', 'createdAt', 'isFavorite'])",
+            "name": { ".validate": "newData.isString() && newData.val().length > 0" },
+            "itemIdsByLayer": {
+              "$layer": { ".validate": "newData.isString()" }
+            },
+            "createdAt": { ".validate": "newData.isNumber()" },
+            "occasion": { ".validate": "newData.isString() || newData.val() == null" },
+            "fashionScore": { ".validate": "newData.isNumber() || newData.val() == null" },
+            "isFavorite": { ".validate": "newData.isBoolean()" }
+          }
+        }
+
+        // settings / savedLooks / recommendations sub-nodes: Module 11's
+        // settings are device-local only (SettingsLocalPreferences via
+        // shared_preferences), not synced to Firebase — see that class's
+        // doc comment for why (theme/language/toggles are a device
+        // preference, not account data). Nothing to add here for Module 11.
+      }
+    },
+
+    // Read-only for all signed-in users; only writable by admins (enforced
+    // via Firebase custom claims once an admin flow exists — Module 12
+    // finalizes this alongside Storage rules and the rest of the schema).
+    "clothingCatalog": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.admin === true"
+    }
+  }
+}
