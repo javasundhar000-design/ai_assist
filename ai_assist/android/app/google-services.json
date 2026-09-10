@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "58548553120",
+    "firebase_url": "https://studentfoodservice-82f3b-default-rtdb.firebaseio.com",
+    "project_id": "studentfoodservice-82f3b",
+    "storage_bucket": "studentfoodservice-82f3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58548553120:android:f3a29ad359eabfccfb50c5",
+        "android_client_info": {
+          "package_name": "com.example.ai_assist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ4PpuWN2pA9kqWKvWtoGAFbEONZ8UZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58548553120:android:a41b12aa5fc8e659fb50c5",
+        "android_client_info": {
+          "package_name": "com.example.aura_stylist_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ4PpuWN2pA9kqWKvWtoGAFbEONZ8UZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58548553120:android:82699d61192684b8fb50c5",
+        "android_client_info": {
+          "package_name": "com.example.datachipper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ4PpuWN2pA9kqWKvWtoGAFbEONZ8UZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58548553120:android:ce44f78487fb9574fb50c5",
+        "android_client_info": {
+          "package_name": "com.example.interior_ar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ4PpuWN2pA9kqWKvWtoGAFbEONZ8UZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58548553120:android:bab172e45246fd02fb50c5",
+        "android_client_info": {
+          "package_name": "com.example.wildlife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ4PpuWN2pA9kqWKvWtoGAFbEONZ8UZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
