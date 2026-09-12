@@ -1,41 +1,42 @@
 import 'package:flutter_tts/flutter_tts.dart';
 
-/// Thin wrapper around flutter_tts so every screen speaks with the same
-/// configured voice/rate, and so we only initialize the plugin once.
+/// Single point of control for all speech output (spec §16).
+/// Every screen that needs Play/Pause/Resume/Stop/Replay uses this instead
+/// of instantiating its own FlutterTts.
 class TtsService {
-  TtsService._internal();
-  static final TtsService instance = TtsService._internal();
-
   final FlutterTts _tts = FlutterTts();
-  bool _initialized = false;
+  String _lastSpoken = '';
 
-  Future<void> _ensureInit() async {
-    if (_initialized) return;
-    await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.5); // slower, clearer default
-    await _tts.setPitch(1.0);
-    await _tts.setVolume(1.0);
-    _initialized = true;
+  double speechRate = 0.5; // 0.0 - 1.0
+  double pitch = 1.0; // 0.5 - 2.0
+  double volume = 1.0; // 0.0 - 1.0
+  String language = 'en-US';
+
+  Future<void> _applySettings() async {
+    await _tts.setLanguage(language);
+    await _tts.setSpeechRate(speechRate);
+    await _tts.setPitch(pitch);
+    await _tts.setVolume(volume);
   }
 
   Future<void> speak(String text) async {
-    if (text.trim().isEmpty) return;
-    await _ensureInit();
-    await _tts.stop();
+    await _applySettings();
+    _lastSpoken = text;
     await _tts.speak(text);
   }
 
-  Future<void> stop() async {
-    await _tts.stop();
+  Future<void> replay() async {
+    if (_lastSpoken.isNotEmpty) {
+      await speak(_lastSpoken);
+    }
   }
 
-  Future<void> setRate(double rate) async {
-    await _ensureInit();
-    await _tts.setSpeechRate(rate);
-  }
+  Future<void> pause() => _tts.pause();
 
-  Future<void> setLanguage(String bcp47Code) async {
-    await _ensureInit();
-    await _tts.setLanguage(bcp47Code);
+  Future<void> stop() => _tts.stop();
+
+  Future<List<dynamic>> availableVoices() async {
+    final voices = await _tts.getVoices;
+    return List<dynamic>.from(voices as List);
   }
 }

@@ -1,5 +1,5 @@
 name: ai_assist
-description: "AI Assist — an accessibility app for blind, non-speaking, and motor-impaired users."
+description: "AI Assist — an accessibility-focused AI assistant with role-based access control."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,40 +9,44 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.6
 
-  # Firebase — realtime, multi-device backend
-  firebase_core: ^3.8.0
-  firebase_auth: ^5.3.3      # caregiver accounts (email + password)
-  firebase_database: ^11.1.6 # Realtime Database: members, alerts, live sync
+  # State management
+  flutter_riverpod: ^2.5.1
 
-  # Networking (OpenRouter)
-  http: ^1.6.0
+  # Navigation
+  go_router: ^14.2.0
+
+  # Networking (used to call OpenRouter directly)
+  dio: ^5.4.3+1
+
+  # Secure on-device storage: session id + the user's own OpenRouter key.
+  # Never use SharedPreferences for secrets.
+  flutter_secure_storage: ^9.2.2
+
+  # Password hashing for the on-device user store
+  crypto: ^3.0.3
 
   # Camera / images
-  image_picker: ^1.2.3
+  image_picker: ^1.1.2
 
-  # Voice output (Blind Mode + Non-Speaking Mode)
-  flutter_tts: ^4.2.0
+  # Text to speech
+  flutter_tts: ^4.0.2
 
-  # Voice input (Non-Speaking Mode: speak-to-type)
-  speech_to_text: ^7.0.0
+  # Local persistence for non-sensitive data (settings, cached history)
+  shared_preferences: ^2.2.3
 
-  # Local, per-device session cache (which family this device joined, notes)
-  shared_preferences: ^2.3.3
-
-  # SOS emergency alerts: launches the phone's SMS/dialer app
-  url_launcher: ^6.3.1
-
-  # Typography
-  google_fonts: ^6.2.1
-
-  # Icons
-  cupertino_icons: ^1.0.8
+  # Utilities
+  equatable: ^2.0.5
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
