@@ -9,6 +9,7 @@ class ObjectRecognitionScreen extends VisionCaptureScreen {
           description:
               'Capture what is in front of you. AI Assist will describe nearby objects and their approximate position.',
           permission: Permission.recognizeObject,
+          historyTaskType: 'object',
           loadingMessage: 'Analyzing image...',
           call: (service, bytes) => service.recognizeObject(bytes),
         );

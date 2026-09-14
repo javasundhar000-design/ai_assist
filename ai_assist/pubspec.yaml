@@ -36,6 +36,17 @@ dependencies:
   # Local persistence for non-sensitive data (settings, cached history)
   shared_preferences: ^2.2.3
 
+  # Camera + head-pose tracking (stand-in for true gaze tracking — see
+  # gaze_tracking_service.dart for why true pupil-level gaze needs
+  # platform-specific depth-sensing hardware this can't provide)
+  camera: ^0.11.0+2
+  google_mlkit_face_detection: ^0.13.1
+
+  # Firebase — accounts, roles, and live caregiver/alerts data
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  firebase_database: ^11.1.4
+
   # Utilities
   equatable: ^2.0.5
   intl: ^0.19.0

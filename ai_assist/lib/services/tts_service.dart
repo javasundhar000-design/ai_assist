@@ -35,8 +35,6 @@ class TtsService {
 
   Future<void> stop() => _tts.stop();
 
-  Future<List<dynamic>> availableVoices() async {
-    final voices = await _tts.getVoices;
-    return List<dynamic>.from(voices as List);
-  }
+  Future<List<dynamic>> availableVoices() async =>
+    List<dynamic>.from(await _tts.getVoices);
 }

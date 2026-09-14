@@ -9,6 +9,7 @@ class ReadDocumentScreen extends VisionCaptureScreen {
           description:
               'Point your camera at a page, label, or sign. AI Assist will read the text aloud.',
           permission: Permission.readDocument,
+          historyTaskType: 'ocr',
           loadingMessage: 'Reading text...',
           call: (service, bytes) => service.extractText(bytes),
         );

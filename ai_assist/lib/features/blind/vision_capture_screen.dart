@@ -26,12 +26,17 @@ class VisionCaptureScreen extends ConsumerStatefulWidget {
   final String lowConfidenceNotice;
   final VisionCall call;
 
+  /// Identifies this feature in AI history entries ('ocr', 'medicine',
+  /// 'object', 'currency', 'scene') — see RealtimeDataService.recordHistory.
+  final String historyTaskType;
+
   const VisionCaptureScreen({
     super.key,
     required this.title,
     required this.description,
     required this.permission,
     required this.call,
+    required this.historyTaskType,
     this.loadingMessage = 'Analyzing image...',
     this.lowConfidenceNotice = 'Some text could not be clearly recognized.',
   });
@@ -62,6 +67,7 @@ class _VisionCaptureScreenState extends ConsumerState<VisionCaptureScreen> {
         _result = result;
         _stage = _Stage.result;
       });
+      _recordHistory(result);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -75,6 +81,16 @@ class _VisionCaptureScreenState extends ConsumerState<VisionCaptureScreen> {
     final tts = ref.read(ttsServiceProvider);
     setState(() => _isSpeaking = true);
     await tts.speak(text);
+  }
+
+  /// Best-effort — history is a convenience feature, so a write failure
+  /// (offline, Firebase not configured) shouldn't interrupt the result the
+  /// person is already looking at.
+  void _recordHistory(VisionResult result) {
+    final service = ref.read(realtimeDataServiceProvider);
+    final uid = ref.read(authControllerProvider).user?.id;
+    if (service == null || uid == null) return;
+    service.recordHistory(uid, widget.historyTaskType, result.summary).catchError((_) {});
   }
 
   void _reset() => setState(() {

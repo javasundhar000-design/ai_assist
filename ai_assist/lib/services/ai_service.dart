@@ -128,15 +128,15 @@ class OpenRouterAiService implements AiService {
       );
       final choices = response.data?['choices'] as List?;
       String? content;
-
-      if (choices!.isNotEmpty) {
-        final message = choices.first['message'];
-
-        if (message is Map<String, dynamic>) {
-          final value = message['content'];
-
-          if (value is String) {
-            content = value;
+      if (choices != null && choices.isNotEmpty) {
+        final firstChoice = choices.first;
+        if (firstChoice is Map) {
+          final message = firstChoice['message'];
+          if (message is Map) {
+            final value = message['content'];
+            if (value is String) {
+              content = value;
+            }
           }
         }
       }
@@ -238,15 +238,16 @@ class DemoAiService implements AiService {
   @override
   Future<VisionResult> recognizeMedicine(Uint8List image) async {
     await _think();
-    return const VisionResult(
+    final fields = <String, String?>{
+      'Medicine Name': 'Paracetamol',
+      'Strength': '500 mg',
+      'Manufacturer': 'Information could not be clearly read.',
+      'Expiry Date': '11/2027',
+      'Batch Number': null,
+    };
+    return VisionResult(
       summary: 'Medicine label recognized.',
-      fields: {
-        'Medicine Name': 'Paracetamol',
-        'Strength': '500 mg',
-        'Manufacturer': 'Information could not be clearly read.',
-        'Expiry Date': '11/2027',
-        'Batch Number': null,
-      },
+      fields: fields,
     );
   }
 

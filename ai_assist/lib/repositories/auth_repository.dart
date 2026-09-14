@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:ai_assist/services/secure_storage_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/role_permission_map.dart';
@@ -7,7 +6,7 @@ import '../core/errors/app_exception.dart';
 import '../models/permission.dart';
 import '../models/user.dart';
 import '../models/user_role.dart';
-
+import '../services/secure_storage_service.dart' show SecureStorageService;
 
 /// Everything the app needs from "a backend" for accounts/roles/permissions,
 /// done entirely on-device. There is no server anymore — see AppConfig for

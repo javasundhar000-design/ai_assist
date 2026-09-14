@@ -10,6 +10,7 @@ class CurrencyRecognitionScreen extends VisionCaptureScreen {
           title: 'Recognize Currency',
           description: 'Capture a currency note or coin to identify it.',
           permission: Permission.recognizeCurrency,
+          historyTaskType: 'currency',
           loadingMessage: 'Identifying currency...',
           lowConfidenceNotice: 'I cannot confidently identify the currency.',
           call: (service, bytes) => service.recognizeCurrency(bytes),

@@ -11,6 +11,7 @@ class MedicineScreen extends VisionCaptureScreen {
           description:
               'Capture the medicine package. AI Assist will read the name, strength, expiry, and manufacturer if clearly visible.',
           permission: Permission.readMedicine,
+          historyTaskType: 'medicine',
           loadingMessage: 'Recognizing medicine...',
           lowConfidenceNotice: 'Some information could not be clearly read.',
           call: (service, bytes) => service.recognizeMedicine(bytes),

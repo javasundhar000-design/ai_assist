@@ -23,6 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   double _eyeSensitivity = 0.5;
 
   final _apiKeyController = TextEditingController();
+  final _modelController = TextEditingController();
   bool _obscureKey = true;
   bool _hasStoredKey = false;
   bool _savingKey = false;
@@ -34,22 +35,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadStoredKey() async {
-    final key = await ref.read(secureStorageProvider).getOpenRouterKey();
+    final storage = ref.read(secureStorageProvider);
+    final key = await storage.getOpenRouterKey();
+    final model = await storage.getOpenRouterModel();
     if (!mounted) return;
     setState(() {
       _hasStoredKey = key != null && key.trim().isNotEmpty;
       if (_hasStoredKey) _apiKeyController.text = key!;
+      if (model != null && model.trim().isNotEmpty) _modelController.text = model;
     });
   }
 
   Future<void> _saveKey() async {
     setState(() => _savingKey = true);
     try {
-      await ref.read(secureStorageProvider).saveOpenRouterKey(_apiKeyController.text.trim());
+      final storage = ref.read(secureStorageProvider);
+      await storage.saveOpenRouterKey(_apiKeyController.text.trim());
+      if (_modelController.text.trim().isEmpty) {
+        await storage.clearOpenRouterModel();
+      } else {
+        await storage.saveOpenRouterModel(_modelController.text.trim());
+      }
       if (!mounted) return;
       setState(() => _hasStoredKey = _apiKeyController.text.trim().isNotEmpty);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OpenRouter key saved on this device.')),
+        const SnackBar(content: Text('OpenRouter settings saved on this device.')),
       );
     } finally {
       if (mounted) setState(() => _savingKey = false);
@@ -57,10 +67,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _clearKey() async {
-    await ref.read(secureStorageProvider).clearOpenRouterKey();
+    final storage = ref.read(secureStorageProvider);
+    await storage.clearOpenRouterKey();
+    await storage.clearOpenRouterModel();
     if (!mounted) return;
     setState(() {
       _apiKeyController.clear();
+      _modelController.clear();
       _hasStoredKey = false;
     });
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void dispose() {
     _apiKeyController.dispose();
+    _modelController.dispose();
     super.dispose();
   }
 
@@ -123,6 +137,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 icon: Icon(_obscureKey ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                 onPressed: () => setState(() => _obscureKey = !_obscureKey),
               ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppTextField(
+              label: 'Model (optional — leave blank for auto)',
+              controller: _modelController,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'No model is required. Leave this blank to let OpenRouter automatically pick a '
+              'suitable model per request, or enter any OpenRouter model slug you prefer '
+              '(e.g. anthropic/claude-3.5-sonnet, google/gemini-2.0-flash-001).',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Row(

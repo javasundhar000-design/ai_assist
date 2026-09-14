@@ -9,6 +9,7 @@ class SceneUnderstandingScreen extends VisionCaptureScreen {
           description:
               'Capture your surroundings. AI Assist will describe the environment, obstacles, and useful directional information.',
           permission: Permission.sceneUnderstanding,
+          historyTaskType: 'scene',
           loadingMessage: 'Understanding scene...',
           call: (service, bytes) => service.understandScene(bytes),
         );
